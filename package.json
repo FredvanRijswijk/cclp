@@ -1,0 +1,33 @@
+{
+  "name": "ccl",
+  "version": "1.0.0",
+  "description": "Fast CLI to scan, list, and launch Claude Code projects",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "ccl": "./dist/index.js"
+  },
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "keywords": [
+    "claude",
+    "cli",
+    "projects"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@inquirer/prompts": "^7.0.0",
+    "commander": "^13.0.0",
+    "picocolors": "^1.1.0",
+    "posthog-node": "^5.21.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  }
+}
