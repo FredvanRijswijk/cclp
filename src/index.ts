@@ -11,7 +11,7 @@ import pc from "picocolors";
 const program = new Command();
 
 program
-  .name("ccl")
+  .name("cclp")
   .description("Fast CLI to scan, list, and launch Claude Code projects")
   .version("1.0.0")
   .option("-d, --days <n>", "filter to last N days", parseInt);

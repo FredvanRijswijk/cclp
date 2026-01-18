@@ -1,24 +1,34 @@
 {
-  "name": "ccl",
+  "name": "cclp",
   "version": "1.0.0",
   "description": "Fast CLI to scan, list, and launch Claude Code projects",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "ccl": "./dist/index.js"
+    "cclp": "./dist/index.js"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "dev": "tsx src/index.ts",
     "build": "tsc",
+    "prepublishOnly": "npm run build",
     "start": "node dist/index.js"
   },
   "keywords": [
     "claude",
+    "claude-code",
     "cli",
-    "projects"
+    "projects",
+    "launcher"
   ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FredvanRijswijk/cclp.git"
+  },
   "dependencies": {
     "@inquirer/prompts": "^7.0.0",
     "commander": "^13.0.0",
