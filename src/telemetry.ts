@@ -32,7 +32,7 @@ export function track(event: TrackEvent): void {
   try {
     getClient().capture({
       distinctId: getDistinctId(),
-      event: "ccl_" + event.command,
+      event: "cclp_" + event.command,
       properties: {
         project_count: event.projectCount,
         days_filter: event.daysFilter,
