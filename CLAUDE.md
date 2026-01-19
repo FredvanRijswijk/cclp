@@ -29,5 +29,7 @@ CLI tool that scans `~/.claude/projects/` to list and launch Claude Code project
 - `config.ts` - user config in `~/.cclp/config.json` (archived projects, defaults)
 - `cost.ts` - daily/weekly cost breakdown with bar charts
 - `export.ts` - CSV/JSON export of project stats
+- `info.ts` - detailed project info (prompts, files, tools, AI summary)
+- `vim-select.ts` - custom select with j/k/g/G/esc/i keybindings
 
 **Path decoding:** Claude encodes project paths like `/Users/foo/my-project` as `-Users-foo-my-project`. The scanner uses recursive filesystem validation to handle ambiguous hyphens (path separators vs literal hyphens/underscores).

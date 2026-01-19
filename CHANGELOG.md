@@ -7,7 +7,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
-- Vim keybindings in picker: `j`/`k` to navigate, `g`/`G` for top/bottom
+- Vim keybindings in picker: `j`/`k` to navigate, `g`/`G` for top/bottom, `esc` to cancel
+- `i` key in picker to show project info
+- `cclp info <name>` - detailed project information (sessions, prompts, files, tools)
+- `cclp info <name> -s` - AI-generated summary via `claude -p` (cached 24h)
 
 ## [1.3.0] - 2025-01-19
 

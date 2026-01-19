@@ -12,6 +12,7 @@ import { getLastSessionPreview } from "./preview.js";
 import { loadConfig, archiveProject, unarchiveProject, filterArchived } from "./config.js";
 import { getCostByDay, showDailyCost, showWeeklyCost } from "./cost.js";
 import { exportJSON, exportCSV } from "./export.js";
+import { getProjectInfo, showProjectInfo, getOrGenerateSummary } from "./info.js";
 import type { ProjectStats } from "./parser.js";
 import type { SessionPreview } from "./preview.js";
 import pc from "picocolors";
@@ -94,6 +95,30 @@ program
     track({ command: "recent", projectCount: stats.length });
     showCacheIndicator(fromCache);
     showRecent(stats, frecencyScores, opts.limit);
+    await shutdown();
+  });
+
+program
+  .command("info <name>")
+  .description("Show detailed project information")
+  .option("-s, --summary", "include AI-generated summary (uses claude -p)")
+  .action(async (name: string, opts: { summary?: boolean }) => {
+    const { stats } = await getStats();
+    const match = fuzzyMatch(stats, name);
+
+    if (!match) {
+      console.log(pc.red(`No project found matching "${name}"`));
+      process.exit(1);
+    }
+
+    const info = await getProjectInfo(match);
+    let summary: string | undefined;
+
+    if (opts.summary) {
+      summary = await getOrGenerateSummary(info);
+    }
+
+    showProjectInfo(info, summary);
     await shutdown();
   });
 
@@ -301,13 +326,22 @@ program.action(async () => {
   showCacheIndicator(fromCache);
 
   try {
-    const selected = await showPicker(stats, { frecencyScores, previews });
-    if (selected) {
-      await recordLaunch(selected.project.path);
-      track({ command: "picker", projectCount: stats.length, daysFilter: days, success: true });
-      await shutdown();
-      console.log(pc.dim(`Opening ${selected.project.path}...`));
-      launchClaude(selected.project);
+    const result = await showPicker(stats, { frecencyScores, previews });
+    if (result) {
+      if (result.action === "info") {
+        // Show info and exit
+        const info = await getProjectInfo(result.value);
+        showProjectInfo(info);
+        track({ command: "picker", projectCount: stats.length, daysFilter: days, success: true });
+        await shutdown();
+      } else {
+        // Select and launch
+        await recordLaunch(result.value.project.path);
+        track({ command: "picker", projectCount: stats.length, daysFilter: days, success: true });
+        await shutdown();
+        console.log(pc.dim(`Opening ${result.value.project.path}...`));
+        launchClaude(result.value.project);
+      }
     } else {
       track({ command: "picker", projectCount: stats.length, daysFilter: days, success: false });
       await shutdown();

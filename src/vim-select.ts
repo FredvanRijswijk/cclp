@@ -26,10 +26,15 @@ type Config<T> = {
   pageSize?: number;
 };
 
-export async function vimSelect<T>(config: Config<T>): Promise<T> {
+export type SelectResult<T> = {
+  action: "select" | "info";
+  value: T;
+} | null;
+
+export async function vimSelect<T>(config: Config<T>): Promise<SelectResult<T>> {
   const { choices, pageSize = 15, message } = config;
 
-  return createPrompt<T, Config<T>>(
+  return createPrompt<SelectResult<T>, Config<T>>(
     (cfg, done) => {
       const theme = makeTheme({});
       const prefix = usePrefix({ theme });
@@ -53,7 +58,14 @@ export async function vimSelect<T>(config: Config<T>): Promise<T> {
           const selected = selectableChoices[active];
           if (selected) {
             setStatus("done");
-            done(selected.value);
+            done({ action: "select", value: selected.value });
+          }
+        } else if (key.name === "i") {
+          // Info key
+          const selected = selectableChoices[active];
+          if (selected) {
+            setStatus("done");
+            done({ action: "info", value: selected.value });
           }
         } else if (isUpKey(key) || key.name === "k") {
           const next = active - 1;
@@ -89,7 +101,7 @@ export async function vimSelect<T>(config: Config<T>): Promise<T> {
         return `${prefix} ${cfg.message} ${pc.cyan(selected?.name || "")}`;
       }
 
-      const hint = pc.dim("(j/k, enter, esc)");
+      const hint = pc.dim("(j/k, enter, i=info, esc)");
       return `${prefix} ${cfg.message} ${hint}\n${page}`;
     }
   )(config);

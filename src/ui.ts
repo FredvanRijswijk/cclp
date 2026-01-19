@@ -1,4 +1,4 @@
-import { vimSelect } from "./vim-select.js";
+import { vimSelect, type SelectResult } from "./vim-select.js";
 import pc from "picocolors";
 import type { ProjectStats } from "./parser.js";
 import type { SessionPreview } from "./preview.js";
@@ -107,7 +107,7 @@ export function sortByFrecency(
 export async function showPicker(
   stats: ProjectStats[],
   options: PickerOptions = {}
-): Promise<ProjectStats | null> {
+): Promise<SelectResult<ProjectStats>> {
   if (stats.length === 0) {
     console.log(pc.yellow("No projects found"));
     return null;
