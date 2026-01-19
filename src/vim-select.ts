@@ -9,6 +9,7 @@ import {
   isEnterKey,
   isUpKey,
   isDownKey,
+  CancelPromptError,
 } from "@inquirer/core";
 import pc from "picocolors";
 
@@ -41,10 +42,14 @@ export async function vimSelect<T>(config: Config<T>): Promise<T> {
       const [active, setActive] = useState(0);
       const [status, setStatus] = useState<"idle" | "done">("idle");
 
-      useKeypress((key) => {
+      useKeypress((key, rl) => {
         if (status === "done") return;
 
-        if (isEnterKey(key)) {
+        if (key.name === "escape" || (key.ctrl && key.name === "c")) {
+          setStatus("done");
+          rl.close();
+          throw new CancelPromptError();
+        } else if (isEnterKey(key)) {
           const selected = selectableChoices[active];
           if (selected) {
             setStatus("done");
@@ -84,7 +89,7 @@ export async function vimSelect<T>(config: Config<T>): Promise<T> {
         return `${prefix} ${cfg.message} ${pc.cyan(selected?.name || "")}`;
       }
 
-      const hint = pc.dim("(j/k, enter)");
+      const hint = pc.dim("(j/k, enter, esc)");
       return `${prefix} ${cfg.message} ${hint}\n${page}`;
     }
   )(config);
