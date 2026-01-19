@@ -6,6 +6,11 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.4.1] - 2026-01-19
+
+### Fixed
+- README now included in npm package
+
 ## [1.4.0] - 2026-01-19
 
 ### Added
@@ -62,7 +67,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Path decoding for Claude's encoded project paths
 - Anonymous telemetry via PostHog
 
-[Unreleased]: https://github.com/FredvanRijswijk/cclp/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/FredvanRijswijk/cclp/compare/v1.4.1...HEAD
+[1.4.1]: https://github.com/FredvanRijswijk/cclp/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/FredvanRijswijk/cclp/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/FredvanRijswijk/cclp/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/FredvanRijswijk/cclp/compare/v1.1.0...v1.2.0

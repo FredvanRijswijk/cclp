@@ -1,6 +1,6 @@
 {
   "name": "cclp",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Fast CLI to scan, list, and launch Claude Code projects",
   "type": "module",
   "main": "dist/index.js",
@@ -8,7 +8,8 @@
     "cclp": "./dist/index.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
   "scripts": {
     "dev": "tsx src/index.ts",
