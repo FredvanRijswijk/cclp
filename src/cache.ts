@@ -95,3 +95,13 @@ export async function setCache(stats: ProjectStats[]): Promise<void> {
   };
   await writeFile(CACHE_FILE, JSON.stringify(data), "utf-8");
 }
+
+export async function clearCache(): Promise<boolean> {
+  try {
+    const { unlink } = await import("node:fs/promises");
+    await unlink(CACHE_FILE);
+    return true;
+  } catch {
+    return false;
+  }
+}

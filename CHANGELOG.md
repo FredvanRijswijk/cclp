@@ -6,6 +6,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.2.0] - 2025-01-19
+
+### Added
+- `cclp clear-cache` command to force cache refresh
+- `--no-cache` flag to bypass cache for any command
+- `cclp completion <shell>` for bash/zsh/fish shell completion
+- `(cached)` indicator when displaying cached data
+
 ## [1.1.0] - 2025-01-19
 
 ### Added
@@ -30,6 +38,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Path decoding for Claude's encoded project paths
 - Anonymous telemetry via PostHog
 
-[Unreleased]: https://github.com/FredvanRijswijk/cclp/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/FredvanRijswijk/cclp/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/FredvanRijswijk/cclp/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/FredvanRijswijk/cclp/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/FredvanRijswijk/cclp/releases/tag/v1.0.0
