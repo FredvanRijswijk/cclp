@@ -39,7 +39,7 @@ export function track(event: TrackEvent): void {
         project_count: event.projectCount,
         days_filter: event.daysFilter,
         success: event.success,
-        version: "1.3.0",
+        version: "1.4.0",
       },
     });
   } catch {
