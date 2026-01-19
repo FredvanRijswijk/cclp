@@ -23,5 +23,8 @@ CLI tool that scans `~/.claude/projects/` to list and launch Claude Code project
 - `ui.ts` - interactive picker (@inquirer/prompts), table output, fuzzy matching, days filtering
 - `launcher.ts` - spawns `claude` process in project directory
 - `telemetry.ts` - PostHog event tracking (anonymous usage stats)
+- `cache.ts` - caches ProjectStats to `~/.cclp/cache.json` (5min TTL, invalidates on projects dir mtime change)
+- `frecency.ts` - tracks launch history in `~/.cclp/history.json`, calculates frecency scores (recent+frequent launches rank higher)
+- `preview.ts` - parses last session JSONL for preview info (model, tokens, first user message)
 
 **Path decoding:** Claude encodes project paths like `/Users/foo/my-project` as `-Users-foo-my-project`. The scanner uses recursive filesystem validation to handle ambiguous hyphens (path separators vs literal hyphens/underscores).

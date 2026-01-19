@@ -1,6 +1,7 @@
 import { select } from "@inquirer/prompts";
 import pc from "picocolors";
 import type { ProjectStats } from "./parser.js";
+import type { SessionPreview } from "./preview.js";
 import { calculateCost, formatCost, formatTokens } from "./pricing.js";
 
 function formatDate(date: Date | null): string {
@@ -19,14 +20,62 @@ function padRight(str: string, len: number): string {
   return str.length >= len ? str.slice(0, len) : str + " ".repeat(len - str.length);
 }
 
-export async function showPicker(stats: ProjectStats[]): Promise<ProjectStats | null> {
+function formatModel(model: string | null): string {
+  if (!model) return "";
+  if (model.includes("opus")) return "opus";
+  if (model.includes("sonnet")) return "sonnet";
+  if (model.includes("haiku")) return "haiku";
+  return model.split("-")[0] || model;
+}
+
+function formatPreview(preview: SessionPreview | null): string {
+  if (!preview) return "";
+  const parts: string[] = [];
+
+  if (preview.model) {
+    parts.push(formatModel(preview.model));
+  }
+
+  const tokens = preview.inputTokens + preview.outputTokens;
+  if (tokens > 0) {
+    parts.push(formatTokens(tokens));
+  }
+
+  if (preview.firstUserMessage) {
+    const msg = preview.firstUserMessage.replace(/\n/g, " ").slice(0, 40);
+    parts.push(`"${msg}${preview.firstUserMessage.length > 40 ? "..." : ""}"`);
+  }
+
+  return parts.length > 0 ? pc.dim(parts.join(" | ")) : "";
+}
+
+export interface PickerOptions {
+  frecencyScores?: Record<string, number>;
+  previews?: Map<string, SessionPreview | null>;
+}
+
+export async function showPicker(
+  stats: ProjectStats[],
+  options: PickerOptions = {}
+): Promise<ProjectStats | null> {
   if (stats.length === 0) {
     console.log(pc.yellow("No projects found"));
     return null;
   }
 
-  // Sort by last activity (most recent first)
+  const { frecencyScores = {}, previews } = options;
+
+  // Sort by frecency (if available) then by last activity
   const sorted = [...stats].sort((a, b) => {
+    const scoreA = frecencyScores[a.project.path] || 0;
+    const scoreB = frecencyScores[b.project.path] || 0;
+
+    // If frecency differs, use that
+    if (scoreA !== scoreB) {
+      return scoreB - scoreA;
+    }
+
+    // Fall back to last activity
     if (!a.lastActivity) return 1;
     if (!b.lastActivity) return -1;
     return b.lastActivity.getTime() - a.lastActivity.getTime();
@@ -36,14 +85,21 @@ export async function showPicker(stats: ProjectStats[]): Promise<ProjectStats | 
     const cost = calculateCost(s.usage);
     const costStr = formatCost(cost);
     const lastStr = formatDate(s.lastActivity);
+    const frecency = frecencyScores[s.project.path];
+    const frecencyStr = frecency ? pc.cyan(`[${frecency}]`) : "";
+
+    const preview = previews?.get(s.project.path) ?? null;
+    const previewStr = formatPreview(preview);
+
     return {
-      name: `${padRight(s.project.name, 30)} ${pc.dim(lastStr.padStart(10))} ${pc.green(costStr.padStart(8))}`,
+      name: `${padRight(s.project.name, 28)} ${pc.dim(lastStr.padStart(10))} ${pc.green(costStr.padStart(8))} ${frecencyStr}`,
+      description: previewStr || undefined,
       value: s,
     };
   });
 
   return select({
-    message: "Select project (ctrl-c to cancel):",
+    message: "Select project:",
     choices,
     pageSize: 15,
   });
