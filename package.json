@@ -30,6 +30,7 @@
     "url": "git+https://github.com/FredvanRijswijk/cclp.git"
   },
   "dependencies": {
+    "@inquirer/core": "^11.1.1",
     "@inquirer/prompts": "^7.0.0",
     "commander": "^13.0.0",
     "picocolors": "^1.1.0",

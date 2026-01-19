@@ -1,4 +1,4 @@
-import { select } from "@inquirer/prompts";
+import { vimSelect } from "./vim-select.js";
 import pc from "picocolors";
 import type { ProjectStats } from "./parser.js";
 import type { SessionPreview } from "./preview.js";
@@ -135,7 +135,7 @@ export async function showPicker(
     };
   });
 
-  return select({
+  return vimSelect({
     message: "Select project:",
     choices,
     pageSize: 15,

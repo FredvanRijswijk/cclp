@@ -6,6 +6,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- Vim keybindings in picker: `j`/`k` to navigate, `g`/`G` for top/bottom
+
 ## [1.3.0] - 2025-01-19
 
 ### Added
