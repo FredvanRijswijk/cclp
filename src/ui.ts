@@ -16,6 +16,38 @@ function formatDate(date: Date | null): string {
   return `${Math.floor(days / 30)}mo ago`;
 }
 
+// Activity level based on last activity
+type ActivityLevel = "hot" | "warm" | "cold" | "frozen";
+
+function getActivityLevel(date: Date | null): ActivityLevel {
+  if (!date) return "frozen";
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  if (days <= 1) return "hot";
+  if (days <= 7) return "warm";
+  if (days <= 30) return "cold";
+  return "frozen";
+}
+
+function colorByActivity(text: string, level: ActivityLevel): string {
+  switch (level) {
+    case "hot": return pc.red(text);
+    case "warm": return pc.yellow(text);
+    case "cold": return pc.blue(text);
+    case "frozen": return pc.dim(text);
+  }
+}
+
+function activityIndicator(level: ActivityLevel): string {
+  switch (level) {
+    case "hot": return pc.red("●");
+    case "warm": return pc.yellow("●");
+    case "cold": return pc.blue("●");
+    case "frozen": return pc.dim("○");
+  }
+}
+
 function padRight(str: string, len: number): string {
   return str.length >= len ? str.slice(0, len) : str + " ".repeat(len - str.length);
 }
@@ -54,6 +86,24 @@ export interface PickerOptions {
   previews?: Map<string, SessionPreview | null>;
 }
 
+export function sortByFrecency(
+  stats: ProjectStats[],
+  frecencyScores: Record<string, number> = {}
+): ProjectStats[] {
+  return [...stats].sort((a, b) => {
+    const scoreA = frecencyScores[a.project.path] || 0;
+    const scoreB = frecencyScores[b.project.path] || 0;
+
+    if (scoreA !== scoreB) {
+      return scoreB - scoreA;
+    }
+
+    if (!a.lastActivity) return 1;
+    if (!b.lastActivity) return -1;
+    return b.lastActivity.getTime() - a.lastActivity.getTime();
+  });
+}
+
 export async function showPicker(
   stats: ProjectStats[],
   options: PickerOptions = {}
@@ -64,22 +114,7 @@ export async function showPicker(
   }
 
   const { frecencyScores = {}, previews } = options;
-
-  // Sort by frecency (if available) then by last activity
-  const sorted = [...stats].sort((a, b) => {
-    const scoreA = frecencyScores[a.project.path] || 0;
-    const scoreB = frecencyScores[b.project.path] || 0;
-
-    // If frecency differs, use that
-    if (scoreA !== scoreB) {
-      return scoreB - scoreA;
-    }
-
-    // Fall back to last activity
-    if (!a.lastActivity) return 1;
-    if (!b.lastActivity) return -1;
-    return b.lastActivity.getTime() - a.lastActivity.getTime();
-  });
+  const sorted = sortByFrecency(stats, frecencyScores);
 
   const choices = sorted.map((s) => {
     const cost = calculateCost(s.usage);
@@ -87,12 +122,14 @@ export async function showPicker(
     const lastStr = formatDate(s.lastActivity);
     const frecency = frecencyScores[s.project.path];
     const frecencyStr = frecency ? pc.cyan(`[${frecency}]`) : "";
+    const activity = getActivityLevel(s.lastActivity);
+    const indicator = activityIndicator(activity);
 
     const preview = previews?.get(s.project.path) ?? null;
     const previewStr = formatPreview(preview);
 
     return {
-      name: `${padRight(s.project.name, 28)} ${pc.dim(lastStr.padStart(10))} ${pc.green(costStr.padStart(8))} ${frecencyStr}`,
+      name: `${indicator} ${padRight(s.project.name, 26)} ${pc.dim(lastStr.padStart(10))} ${pc.green(costStr.padStart(8))} ${frecencyStr}`,
       description: previewStr || undefined,
       value: s,
     };
@@ -103,6 +140,35 @@ export async function showPicker(
     choices,
     pageSize: 15,
   });
+}
+
+export function showRecent(
+  stats: ProjectStats[],
+  frecencyScores: Record<string, number> = {},
+  limit: number = 5
+): void {
+  if (stats.length === 0) {
+    console.log(pc.yellow("No projects found"));
+    return;
+  }
+
+  const sorted = sortByFrecency(stats, frecencyScores).slice(0, limit);
+
+  console.log(pc.bold("Recent projects:"));
+  console.log();
+
+  sorted.forEach((s, i) => {
+    const cost = calculateCost(s.usage);
+    const activity = getActivityLevel(s.lastActivity);
+    const indicator = activityIndicator(activity);
+    const lastStr = formatDate(s.lastActivity);
+
+    console.log(
+      `  ${pc.dim(`${i + 1}.`)} ${indicator} ${padRight(s.project.name, 24)} ${pc.dim(lastStr.padStart(10))} ${pc.green(formatCost(cost))}`
+    );
+  });
+  console.log();
+  console.log(pc.dim(`Run: cclp open <name>`));
 }
 
 export function showTable(stats: ProjectStats[]): void {
@@ -121,16 +187,19 @@ export function showTable(stats: ProjectStats[]): void {
   // Header
   console.log(
     pc.bold(
-      `${padRight("PROJECT", 30)} ${padRight("SESSIONS", 10)} ${padRight("LAST", 12)} ${padRight("TOKENS", 12)} ${padRight("COST", 10)}`
+      `  ${padRight("PROJECT", 28)} ${padRight("SESSIONS", 10)} ${padRight("LAST", 12)} ${padRight("TOKENS", 12)} ${padRight("COST", 10)}`
     )
   );
-  console.log(pc.dim("-".repeat(74)));
+  console.log(pc.dim("-".repeat(76)));
 
   for (const s of sorted) {
     const cost = calculateCost(s.usage);
     const totalTokens = s.usage.inputTokens + s.usage.outputTokens;
+    const activity = getActivityLevel(s.lastActivity);
+    const indicator = activityIndicator(activity);
+
     console.log(
-      `${padRight(s.project.name, 30)} ${padRight(String(s.sessions), 10)} ${padRight(formatDate(s.lastActivity), 12)} ${padRight(formatTokens(totalTokens), 12)} ${pc.green(formatCost(cost))}`
+      `${indicator} ${padRight(s.project.name, 28)} ${padRight(String(s.sessions), 10)} ${padRight(formatDate(s.lastActivity), 12)} ${padRight(formatTokens(totalTokens), 12)} ${pc.green(formatCost(cost))}`
     );
   }
 }

@@ -6,6 +6,22 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.3.0] - 2025-01-19
+
+### Added
+- `cclp recent` - show top 5 projects by frecency (quick access)
+- `cclp cost` - daily cost breakdown with bar chart
+- `cclp cost -w` - weekly cost breakdown
+- `cclp export` - export project data as CSV or JSON
+- `cclp archive <name>` - hide project from picker and list
+- `cclp unarchive <name>` - restore archived project
+- `cclp list -a` - include archived projects in list
+- Config file support (`~/.cclp/config.json`)
+
+### Changed
+- Activity color coding: red ● (today), yellow ● (week), blue ● (month), dim ○ (older)
+- Updated shell completion scripts with new commands
+
 ## [1.2.0] - 2025-01-19
 
 ### Added
@@ -38,7 +54,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Path decoding for Claude's encoded project paths
 - Anonymous telemetry via PostHog
 
-[Unreleased]: https://github.com/FredvanRijswijk/cclp/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/FredvanRijswijk/cclp/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/FredvanRijswijk/cclp/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/FredvanRijswijk/cclp/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/FredvanRijswijk/cclp/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/FredvanRijswijk/cclp/releases/tag/v1.0.0

@@ -22,10 +22,12 @@ function getDistinctId(): string {
 }
 
 interface TrackEvent {
-  command: "picker" | "list" | "open" | "stats";
+  command: "picker" | "list" | "open" | "stats" | "recent" | "cost" | "export" | "archive";
   projectCount?: number;
   daysFilter?: number;
   success?: boolean;
+  weekly?: boolean;
+  format?: string;
 }
 
 export function track(event: TrackEvent): void {
@@ -37,7 +39,7 @@ export function track(event: TrackEvent): void {
         project_count: event.projectCount,
         days_filter: event.daysFilter,
         success: event.success,
-        version: "1.0.0",
+        version: "1.3.0",
       },
     });
   } catch {
