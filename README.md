@@ -25,6 +25,11 @@ cclp export -f csv      # CSV export
 cclp archive <name>     # hide from picker
 cclp unarchive <name>   # restore
 cclp clear-cache        # force refresh
+cclp set-base ~/projects # set base dir for new projects
+cclp get-base           # show current base dir
+cclp new my-app         # create project and launch claude
+cclp new my-app -d /tmp # override base dir
+cclp telemetry off      # disable anonymous usage tracking
 cclp completion zsh     # shell completions (bash/zsh/fish)
 ```
 
@@ -46,6 +51,7 @@ cclp list -a            # include archived
 - **Cost tracking** - daily/weekly breakdown with bar charts
 - **AI summaries** - `claude -p` generated, cached 24h
 - **Caching** - 5min TTL, auto-invalidates on project changes
+- **New projects** - create and launch in one command
 
 ## Example
 
@@ -68,7 +74,7 @@ Total: $151.01
 All data stored in `~/.cclp/`:
 - `cache.json` - project stats cache
 - `history.json` - launch history for frecency
-- `config.json` - archived projects
+- `config.json` - archived projects, base dir, telemetry
 - `summaries/` - AI summary cache
 
 ## How it works
