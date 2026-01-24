@@ -9,7 +9,6 @@ import {
   isEnterKey,
   isUpKey,
   isDownKey,
-  CancelPromptError,
 } from "@inquirer/core";
 import pc from "picocolors";
 
@@ -52,8 +51,7 @@ export async function vimSelect<T>(config: Config<T>): Promise<SelectResult<T>> 
 
         if (key.name === "escape" || (key.ctrl && key.name === "c")) {
           setStatus("done");
-          rl.close();
-          throw new CancelPromptError();
+          done(null);
         } else if (isEnterKey(key)) {
           const selected = selectableChoices[active];
           if (selected) {

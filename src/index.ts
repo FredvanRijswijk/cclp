@@ -5,11 +5,11 @@ import { scanProjects } from "./scanner.js";
 import { parseAllProjects } from "./parser.js";
 import { showPicker, showTable, showStats, showRecent, fuzzyMatch, filterByDays } from "./ui.js";
 import { launchClaude } from "./launcher.js";
-import { track, shutdown } from "./telemetry.js";
+import { track, shutdown, initTelemetry } from "./telemetry.js";
 import { getCached, setCache, clearCache } from "./cache.js";
 import { getFrecencyScores, recordLaunch } from "./frecency.js";
 import { getLastSessionPreview } from "./preview.js";
-import { loadConfig, archiveProject, unarchiveProject, filterArchived, setProjectBaseDir, getProjectBaseDir } from "./config.js";
+import { loadConfig, archiveProject, unarchiveProject, filterArchived, setProjectBaseDir, getProjectBaseDir, setTelemetry, isTelemetryEnabled } from "./config.js";
 import { createProject } from "./create.js";
 import { getCostByDay, showDailyCost, showWeeklyCost } from "./cost.js";
 import { exportJSON, exportCSV } from "./export.js";
@@ -61,7 +61,7 @@ function showCacheIndicator(fromCache: boolean): void {
 program
   .name("cclp")
   .description("Fast CLI to scan, list, and launch Claude Code projects")
-  .version("1.4.1")
+  .version("1.5.0")
   .option("-d, --days <n>", "filter to last N days", parseInt)
   .option("--no-cache", "bypass cache, fetch fresh data");
 
@@ -311,6 +311,19 @@ program
     }
   });
 
+program
+  .command("telemetry <on|off>")
+  .description("Enable or disable anonymous usage tracking")
+  .action(async (state: string) => {
+    if (state !== "on" && state !== "off") {
+      console.log(pc.red("Usage: cclp telemetry <on|off>"));
+      process.exit(1);
+    }
+    await setTelemetry(state === "on");
+    console.log(pc.green(`Telemetry ${state === "on" ? "enabled" : "disabled"}`));
+    await shutdown();
+  });
+
 // Shell completion commands
 program
   .command("completion")
@@ -323,7 +336,7 @@ program
         console.log(`# Add to ~/.bashrc:
 _${name}_completions() {
   local cur="\${COMP_WORDS[COMP_CWORD]}"
-  local commands="list recent open stats cost export archive unarchive clear-cache set-base get-base new completion"
+  local commands="list recent open stats cost export archive unarchive clear-cache set-base get-base new telemetry completion"
   COMPREPLY=($(compgen -W "\${commands}" -- "\${cur}"))
 }
 complete -F _${name}_completions ${name}`);
@@ -344,6 +357,7 @@ _${name}() {
     'set-base:Set base directory for new projects'
     'get-base:Show current base directory'
     'new:Create new project and launch Claude'
+    'telemetry:Enable or disable usage tracking'
     'completion:Generate shell completion'
   )
   _describe 'command' commands
@@ -364,6 +378,7 @@ complete -c ${name} -n __fish_use_subcommand -a clear-cache -d 'Clear cache'
 complete -c ${name} -n __fish_use_subcommand -a set-base -d 'Set base directory'
 complete -c ${name} -n __fish_use_subcommand -a get-base -d 'Show base directory'
 complete -c ${name} -n __fish_use_subcommand -a new -d 'Create new project'
+complete -c ${name} -n __fish_use_subcommand -a telemetry -d 'Toggle usage tracking'
 complete -c ${name} -n __fish_use_subcommand -a completion -d 'Generate completion'`);
         break;
       default:
@@ -417,4 +432,5 @@ program.action(async () => {
   }
 });
 
+await initTelemetry();
 program.parse();

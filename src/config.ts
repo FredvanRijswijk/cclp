@@ -10,6 +10,7 @@ export interface Config {
   defaultModel?: string;
   archived?: string[]; // project paths to hide
   projectBaseDir?: string; // base dir for new projects
+  telemetry?: boolean; // opt-out of anonymous usage tracking
 }
 
 async function ensureDir(): Promise<void> {
@@ -68,4 +69,15 @@ export async function setProjectBaseDir(dir: string): Promise<void> {
 export async function getProjectBaseDir(): Promise<string | undefined> {
   const config = await loadConfig();
   return config.projectBaseDir;
+}
+
+export async function setTelemetry(enabled: boolean): Promise<void> {
+  const config = await loadConfig();
+  config.telemetry = enabled;
+  await saveConfig(config);
+}
+
+export async function isTelemetryEnabled(): Promise<boolean> {
+  const config = await loadConfig();
+  return config.telemetry !== false; // default enabled
 }

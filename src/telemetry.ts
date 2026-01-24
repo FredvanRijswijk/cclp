@@ -1,12 +1,18 @@
 import { PostHog } from "posthog-node";
 import { hostname } from "node:os";
 import { createHash } from "node:crypto";
+import { isTelemetryEnabled } from "./config.js";
 
 // Public project key - safe to expose
 const POSTHOG_KEY = "phc_mbe7JOlqxY7kV9VRM4IIJSeZRNnL2baeeMvU8ukDlt6";
 const POSTHOG_HOST = "https://eu.i.posthog.com"; // or us.i.posthog.com
 
 let client: PostHog | null = null;
+let telemetryEnabled: boolean | null = null;
+
+export async function initTelemetry(): Promise<void> {
+  telemetryEnabled = await isTelemetryEnabled();
+}
 
 function getClient(): PostHog {
   if (!client) {
@@ -31,6 +37,7 @@ interface TrackEvent {
 }
 
 export function track(event: TrackEvent): void {
+  if (telemetryEnabled === false) return;
   try {
     getClient().capture({
       distinctId: getDistinctId(),
@@ -39,7 +46,7 @@ export function track(event: TrackEvent): void {
         project_count: event.projectCount,
         days_filter: event.daysFilter,
         success: event.success,
-        version: "1.4.1",
+        version: "1.5.0",
       },
     });
   } catch {
