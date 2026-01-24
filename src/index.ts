@@ -61,7 +61,7 @@ function showCacheIndicator(fromCache: boolean): void {
 program
   .name("cclp")
   .description("Fast CLI to scan, list, and launch Claude Code projects")
-  .version("1.5.0")
+  .version("1.5.1")
   .option("-d, --days <n>", "filter to last N days", parseInt)
   .option("--no-cache", "bypass cache, fetch fresh data");
 
