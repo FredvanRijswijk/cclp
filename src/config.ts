@@ -9,6 +9,7 @@ export interface Config {
   defaultDays?: number;
   defaultModel?: string;
   archived?: string[]; // project paths to hide
+  projectBaseDir?: string; // base dir for new projects
 }
 
 async function ensureDir(): Promise<void> {
@@ -56,4 +57,15 @@ export function filterArchived<T extends { project: { path: string } }>(
 ): T[] {
   if (!config.archived || config.archived.length === 0) return stats;
   return stats.filter((s) => !config.archived!.includes(s.project.path));
+}
+
+export async function setProjectBaseDir(dir: string): Promise<void> {
+  const config = await loadConfig();
+  config.projectBaseDir = dir;
+  await saveConfig(config);
+}
+
+export async function getProjectBaseDir(): Promise<string | undefined> {
+  const config = await loadConfig();
+  return config.projectBaseDir;
 }

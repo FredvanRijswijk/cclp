@@ -9,7 +9,8 @@ import { track, shutdown } from "./telemetry.js";
 import { getCached, setCache, clearCache } from "./cache.js";
 import { getFrecencyScores, recordLaunch } from "./frecency.js";
 import { getLastSessionPreview } from "./preview.js";
-import { loadConfig, archiveProject, unarchiveProject, filterArchived } from "./config.js";
+import { loadConfig, archiveProject, unarchiveProject, filterArchived, setProjectBaseDir, getProjectBaseDir } from "./config.js";
+import { createProject } from "./create.js";
 import { getCostByDay, showDailyCost, showWeeklyCost } from "./cost.js";
 import { exportJSON, exportCSV } from "./export.js";
 import { getProjectInfo, showProjectInfo, getOrGenerateSummary } from "./info.js";
@@ -253,6 +254,63 @@ program
     await shutdown();
   });
 
+program
+  .command("set-base <path>")
+  .description("Set default base directory for new projects")
+  .action(async (path: string) => {
+    const { access } = await import("node:fs/promises");
+    const { resolve } = await import("node:path");
+    const { homedir } = await import("node:os");
+
+    // Expand ~ to home dir
+    const expanded = path.startsWith("~/") ? path.replace("~", homedir()) : path;
+    const resolved = resolve(expanded);
+
+    try {
+      await access(resolved);
+    } catch {
+      console.log(pc.red(`Directory does not exist: ${resolved}`));
+      process.exit(1);
+    }
+
+    await setProjectBaseDir(path); // store original (with ~)
+    console.log(pc.green(`Base directory set to: ${path}`));
+    await shutdown();
+  });
+
+program
+  .command("get-base")
+  .description("Show current base directory for new projects")
+  .action(async () => {
+    const baseDir = await getProjectBaseDir();
+    if (baseDir) {
+      console.log(baseDir);
+    } else {
+      console.log(pc.dim("No base directory set"));
+    }
+    await shutdown();
+  });
+
+program
+  .command("new <name>")
+  .description("Create new project and launch Claude")
+  .option("-d, --dir <path>", "override base directory")
+  .action(async (name: string, opts: { dir?: string }) => {
+    try {
+      const projectPath = await createProject(name, opts.dir);
+      await recordLaunch(projectPath);
+      track({ command: "new", success: true });
+      await shutdown();
+      console.log(pc.green(`Created: ${projectPath}`));
+      launchClaude({ path: projectPath, name, encodedPath: "" });
+    } catch (err) {
+      console.log(pc.red((err as Error).message));
+      track({ command: "new", success: false });
+      await shutdown();
+      process.exit(1);
+    }
+  });
+
 // Shell completion commands
 program
   .command("completion")
@@ -265,7 +323,7 @@ program
         console.log(`# Add to ~/.bashrc:
 _${name}_completions() {
   local cur="\${COMP_WORDS[COMP_CWORD]}"
-  local commands="list recent open stats cost export archive unarchive clear-cache completion"
+  local commands="list recent open stats cost export archive unarchive clear-cache set-base get-base new completion"
   COMPREPLY=($(compgen -W "\${commands}" -- "\${cur}"))
 }
 complete -F _${name}_completions ${name}`);
@@ -283,6 +341,9 @@ _${name}() {
     'archive:Hide project from picker'
     'unarchive:Restore archived project'
     'clear-cache:Clear cached project data'
+    'set-base:Set base directory for new projects'
+    'get-base:Show current base directory'
+    'new:Create new project and launch Claude'
     'completion:Generate shell completion'
   )
   _describe 'command' commands
@@ -300,6 +361,9 @@ complete -c ${name} -n __fish_use_subcommand -a export -d 'Export as CSV/JSON'
 complete -c ${name} -n __fish_use_subcommand -a archive -d 'Hide project'
 complete -c ${name} -n __fish_use_subcommand -a unarchive -d 'Restore project'
 complete -c ${name} -n __fish_use_subcommand -a clear-cache -d 'Clear cache'
+complete -c ${name} -n __fish_use_subcommand -a set-base -d 'Set base directory'
+complete -c ${name} -n __fish_use_subcommand -a get-base -d 'Show base directory'
+complete -c ${name} -n __fish_use_subcommand -a new -d 'Create new project'
 complete -c ${name} -n __fish_use_subcommand -a completion -d 'Generate completion'`);
         break;
       default:

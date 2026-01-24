@@ -22,7 +22,7 @@ function getDistinctId(): string {
 }
 
 interface TrackEvent {
-  command: "picker" | "list" | "open" | "stats" | "recent" | "cost" | "export" | "archive";
+  command: "picker" | "list" | "open" | "stats" | "recent" | "cost" | "export" | "archive" | "new";
   projectCount?: number;
   daysFilter?: number;
   success?: boolean;
